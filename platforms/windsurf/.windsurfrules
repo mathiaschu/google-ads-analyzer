@@ -1,0 +1,50 @@
+# Google Ads Analyzer — Windsurf Rules
+
+<!--
+  WINDSURF INTEGRATION
+  Copy to: .windsurfrules
+-->
+
+## Google Ads Campaign Analysis
+
+When analyzing Google Ads campaigns:
+
+### Core Principles
+- Understand account hierarchy before drilling into metrics
+- Analyze trends over 14-30 day windows (single-day spikes = noise)
+- Smart Bidding and PMax are ML-driven — respect learning periods, diagnose constraints
+
+### Mandatory Rules
+1. Always divide `cost_micros` by 1,000,000
+2. Always identify `customer.currency_code` — never assume USD
+3. Always compare vs. prior period (MoM minimum)
+4. Always discount last 7 days for conversion metrics
+5. Always discover via MCC first
+6. Never judge PMax without reviewing asset groups, ad strength, feed quality
+7. Never increase budget if IS lost by Ad Rank > 50%
+8. Every insight needs data evidence
+9. Disambiguate: `conversions` (primary) vs `all_conversions` (all)
+
+### Metric Standards
+| API Metric | Display |
+|:-----------|:--------|
+| `metrics.cost_micros` | Cost |
+| `metrics.impressions` | Impressions |
+| `metrics.clicks` | Clicks |
+| `metrics.ctr` | CTR |
+| `metrics.average_cpc` | Avg. CPC |
+| `metrics.conversions` | Conversions (Primary) |
+| `metrics.search_impression_share` | Search IS |
+
+### GAQL Notes
+- No JOIN — pre-defined accessible fields
+- `segments.*` for breakdowns
+- Date ranges: `segments.date BETWEEN 'YYYY-MM-DD' AND 'YYYY-MM-DD'`
+- Micros ÷ 1,000,000 = actual amount
+
+### Analysis Flow
+1. Discovery → 2. Pull metrics (2 periods) → 3. Diagnose (QS → IS → Bidding → Conversions → Search Terms) → 4. PMax deep dive → 5. Report
+
+### Write Tools
+`add_negative_keywords`, `update_campaign_status`, `update_campaign_budget`, `update_bidding_strategy`, `update_ad_group_status`, `update_ad_status`
+Always confirm before writing.

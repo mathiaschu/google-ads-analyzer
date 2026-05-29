@@ -1,7 +1,26 @@
 ---
 name: google-ads-analyzer
-description: "Provides expert-level analysis and diagnosis for Google Ads campaigns. Use this skill to interpret performance data via GAQL, diagnose Quality Score and Impression Share issues, evaluate Smart Bidding and Performance Max campaigns, and generate actionable recommendations. Use when the user mentions Google Ads analysis, GAQL queries, Quality Score, Impression Share, PMax, Smart Bidding, ROAS, CPA, search terms, negative keywords, or asks to analyze Google Ads data."
+description: "Expert-level analysis, diagnosis, and management for Google Ads campaigns. GAQL queries, Quality Score, Impression Share, Smart Bidding, Performance Max, and campaign write operations."
+version: 2.0.0
+author: Mathias Chu
+license: MIT
+tags:
+  - google-ads
+  - gaql
+  - quality-score
+  - impression-share
+  - smart-bidding
+  - performance-max
+  - campaign-management
+  - search-terms
+  - negative-keywords
 ---
+
+<!--
+  HERMES AGENT SKILL
+  Install: hermes skills install google-ads-analyzer --from .
+  Reference docs in references/ are loaded automatically as linked files.
+-->
 
 # Google Ads Analysis & Diagnosis Skill
 
@@ -14,13 +33,28 @@ Use this skill when you need to **analyze, diagnose, and manage Google Ads campa
 - Evaluating Performance Max campaigns (asset groups, signals, feed quality)
 - Analyzing search term reports and negative keyword coverage
 - Generating structured analysis reports with actionable recommendations
-- Managing campaigns: pause/enable campaigns, ad groups, and ads
-- Updating budgets and bidding strategies
-- Adding negative keywords based on search term analysis
+- Managing campaigns: pause/enable, budgets, bidding strategies, negative keywords
+
+## Prerequisites
+
+Load these reference documents before performing any analysis:
+
+1. `references/core_concepts.md` — Hub: Ad Rank, Quality Score, Smart Bidding, PMax, GAQL
+2. `references/gaql_queries.md` — Ready-to-use GAQL queries for each workflow step
+3. `references/quality_score.md` — 3 components, diagnosis by component
+4. `references/impression_share.md` — IS, lost by budget vs rank, auction insights
+5. `references/smart_bidding.md` — tCPA, tROAS, learning period, when to intervene
+6. `references/performance_max.md` — Asset groups, signals, feed quality, cannibalization
+7. `references/conversion_tracking.md` — Types, DDA, conversion lag, primary vs secondary
+8. `references/account_structure.md` — MCC hierarchy, naming, brand vs non-brand
+9. `references/search_terms_negatives.md` — Search term report, match types, negative keywords
+10. `references/ad_copy_rsa.md` — RSA, headlines, descriptions, ad strength, asset labels
+11. `references/segmentation.md` — GAQL segments: device, geo, day_of_week, audiences
+12. `references/performance_fluctuations.md` — Normal vs concerning, conversion lag trap, checklist
 
 ## Result Recommendations (MANDATORY for Final Reports)
 
-> **IMPORTANT:** The following rules are **MANDATORY** and **MUST be strictly followed** when writing the final analysis report. These are not optional guidelines — they define the required standards for all deliverables.
+> **IMPORTANT:** The following rules are **MANDATORY** and **MUST be strictly followed** when writing the final analysis report.
 
 - **ALWAYS divide `cost_micros` by 1,000,000** to get the actual cost. Google Ads API returns all monetary values in micros (1 unit = 1,000,000 micros).
 - **ALWAYS identify `customer.currency_code`** before interpreting any cost values. Never assume USD.
@@ -91,20 +125,6 @@ The API uses GAQL, a SQL-like language for querying resources. Key differences f
 
 ## Analysis Workflow
 
-**Reference Documents** (loaded automatically from `references/`):
-- `core_concepts.md` - Hub: Ad Rank, Quality Score, Smart Bidding, PMax, GAQL overview
-- `gaql_queries.md` - Ready-to-use GAQL queries for each workflow step
-- `quality_score.md` - 3 components, diagnosis by component
-- `impression_share.md` - IS, lost by budget vs rank, auction insights
-- `smart_bidding.md` - tCPA, tROAS, learning period, when to intervene
-- `performance_max.md` - Asset groups, signals, feed quality, cannibalization
-- `conversion_tracking.md` - Types, DDA, conversion lag, primary vs secondary
-- `account_structure.md` - MCC hierarchy, naming, brand vs non-brand
-- `search_terms_negatives.md` - Search term report, match types, negative keywords
-- `ad_copy_rsa.md` - RSA, headlines, descriptions, ad strength, asset labels
-- `segmentation.md` - GAQL segments: device, geo, day_of_week, audiences
-- `performance_fluctuations.md` - Normal vs concerning, conversion lag trap, checklist
-
 ### Step 1: Discovery
 
 Identify the account structure before any analysis:
@@ -171,3 +191,28 @@ The MCP server includes 6 write tools for acting on analysis findings:
 | `update_ad_status` | Pauses or enables an ad |
 
 **Important:** Always confirm with the user before executing write operations. Present the intended change clearly and wait for approval.
+
+## MCP Server (Optional — Live API Data)
+
+To connect Hermes directly to the Google Ads API:
+
+1. Add the MCP server in your Hermes `config.yaml`:
+
+```yaml
+# ~/.hermes/config.yaml
+mcp_servers:
+  google-ads:
+    command: uvx
+    args:
+      - "--from"
+      - "git+https://github.com/mathiaschu/google-ads-mcp.git"
+      - "google-ads-mcp"
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: "/path/to/scripts/credentials.json"
+      GOOGLE_ADS_DEVELOPER_TOKEN: "YOUR_DEVELOPER_TOKEN"
+      GOOGLE_ADS_LOGIN_CUSTOMER_ID: "YOUR_MCC_ID"
+```
+
+2. Set up credentials: `cd scripts && python3 setup.py`
+
+**Available MCP tools:** `list_accessible_customers`, `run_gaql_query`, `get_campaigns`, `get_keywords`, `get_search_terms`, `get_recommendations`, `add_negative_keywords`, `update_campaign_status`, `update_campaign_budget`, `update_bidding_strategy`, `update_ad_group_status`, `update_ad_status`

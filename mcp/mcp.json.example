@@ -1,16 +1,97 @@
 {
-  "mcpServers": {
-    "google-ads": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/mathiaschu/google-ads-mcp.git",
-        "google-ads-mcp"
-      ],
-      "env": {
-        "GOOGLE_APPLICATION_CREDENTIALS": "/path/to/scripts/credentials.json",
-        "GOOGLE_ADS_DEVELOPER_TOKEN": "YOUR_DEVELOPER_TOKEN",
-        "GOOGLE_ADS_LOGIN_CUSTOMER_ID": "YOUR_MCC_ID_WITHOUT_DASHES"
+  "_comment": "Google Ads MCP Server Configuration — Copy the relevant section to your platform's config. Copilot and Aider are omitted intentionally: they consume the skill as static instructions/rules and do not load MCP servers, so they have no entry here.",
+
+  "hermes": {
+    "_config_file": "~/.hermes/config.yaml",
+    "mcp_servers": {
+      "google-ads": {
+        "command": "uvx",
+        "args": [
+          "--from",
+          "git+https://github.com/mathiaschu/google-ads-mcp.git",
+          "google-ads-mcp"
+        ],
+        "env": {
+          "GOOGLE_APPLICATION_CREDENTIALS": "/path/to/scripts/credentials.json",
+          "GOOGLE_ADS_DEVELOPER_TOKEN": "YOUR_DEVELOPER_TOKEN",
+          "GOOGLE_ADS_LOGIN_CUSTOMER_ID": "YOUR_MCC_ID_WITHOUT_DASHES"
+        }
+      }
+    }
+  },
+
+  "claude-code": {
+    "_config_file": ".mcp.json (project root)",
+    "mcpServers": {
+      "google-ads": {
+        "command": "uvx",
+        "args": [
+          "--from",
+          "git+https://github.com/mathiaschu/google-ads-mcp.git",
+          "google-ads-mcp"
+        ],
+        "env": {
+          "GOOGLE_APPLICATION_CREDENTIALS": "/path/to/scripts/credentials.json",
+          "GOOGLE_ADS_DEVELOPER_TOKEN": "YOUR_DEVELOPER_TOKEN",
+          "GOOGLE_ADS_LOGIN_CUSTOMER_ID": "YOUR_MCC_ID_WITHOUT_DASHES"
+        }
+      }
+    }
+  },
+
+  "cursor": {
+    "_config_file": ".vscode/settings.json or Cursor MCP settings",
+    "mcpServers": {
+      "google-ads": {
+        "command": "uvx",
+        "args": [
+          "--from",
+          "git+https://github.com/mathiaschu/google-ads-mcp.git",
+          "google-ads-mcp"
+        ],
+        "env": {
+          "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}",
+          "GOOGLE_ADS_DEVELOPER_TOKEN": "${env:GOOGLE_ADS_DEVELOPER_TOKEN}",
+          "GOOGLE_ADS_LOGIN_CUSTOMER_ID": "${env:GOOGLE_ADS_LOGIN_CUSTOMER_ID}"
+        }
+      }
+    }
+  },
+
+  "windsurf": {
+    "_config_file": "Windsurf MCP settings",
+    "mcpServers": {
+      "google-ads": {
+        "command": "uvx",
+        "args": [
+          "--from",
+          "git+https://github.com/mathiaschu/google-ads-mcp.git",
+          "google-ads-mcp"
+        ],
+        "env": {
+          "GOOGLE_APPLICATION_CREDENTIALS": "${env:GOOGLE_APPLICATION_CREDENTIALS}",
+          "GOOGLE_ADS_DEVELOPER_TOKEN": "${env:GOOGLE_ADS_DEVELOPER_TOKEN}",
+          "GOOGLE_ADS_LOGIN_CUSTOMER_ID": "${env:GOOGLE_ADS_LOGIN_CUSTOMER_ID}"
+        }
+      }
+    }
+  },
+
+  "opencode": {
+    "_config_file": "OpenCode MCP settings",
+    "mcpServers": {
+      "google-ads": {
+        "command": "uvx",
+        "args": [
+          "--from",
+          "git+https://github.com/mathiaschu/google-ads-mcp.git",
+          "google-ads-mcp"
+        ],
+        "env": {
+          "GOOGLE_APPLICATION_CREDENTIALS": "${GOOGLE_APPLICATION_CREDENTIALS}",
+          "GOOGLE_ADS_DEVELOPER_TOKEN": "${GOOGLE_ADS_DEVELOPER_TOKEN}",
+          "GOOGLE_ADS_LOGIN_CUSTOMER_ID": "${GOOGLE_ADS_LOGIN_CUSTOMER_ID}"
+        }
       }
     }
   }

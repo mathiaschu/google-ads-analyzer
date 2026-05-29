@@ -1,0 +1,51 @@
+# Google Ads Analyzer — Aider Rules
+
+<!--
+  AIDER INTEGRATION
+  Copy to: .aider.rules
+-->
+
+## Google Ads Campaign Analysis
+
+When analyzing Google Ads campaigns:
+
+### Core Principles
+- Understand account hierarchy (MCC → accounts → campaigns → ad groups → keywords) before drilling into metrics
+- Analyze trends over 14-30 day windows; single-day spikes are rarely actionable
+- Smart Bidding and PMax are ML-driven — respect learning periods
+
+### Mandatory Rules
+1. Always divide `cost_micros` by 1,000,000
+2. Always identify `customer.currency_code` — never assume USD
+3. Always compare vs prior period (MoM minimum)
+4. Always discount last 7 days for conversion metrics
+5. Always discover via MCC first using `list_accessible_customers`
+6. Never judge PMax without reviewing asset groups, ad strength, feed quality
+7. Never increase budget if IS lost by Ad Rank > 50%
+8. Every insight needs data evidence
+9. Disambiguate: `conversions` (primary) vs `all_conversions` (all)
+
+### Metric Naming
+| API | Display |
+|:----|:--------|
+| `metrics.cost_micros` | Cost |
+| `metrics.impressions` | Impressions |
+| `metrics.clicks` | Clicks |
+| `metrics.ctr` | CTR |
+| `metrics.average_cpc` | Avg. CPC |
+| `metrics.conversions` | Conversions (Primary) |
+| `metrics.search_impression_share` | Search IS |
+| `ad_group_criterion.quality_info.quality_score` | Quality Score |
+
+### GAQL Reference
+- No JOIN — pre-defined accessible fields
+- `segments.*` for breakdowns
+- Date: `segments.date BETWEEN 'YYYY-MM-DD' AND 'YYYY-MM-DD'`
+- Micros ÷ 1,000,000 = actual amount
+
+### Analysis Flow
+Discovery → Pull metrics (2 periods) → Diagnose (QS → IS → Bidding → Conversions → Search Terms) → PMax deep dive → Report
+
+### Write Tools
+`add_negative_keywords`, `update_campaign_status`, `update_campaign_budget`, `update_bidding_strategy`, `update_ad_group_status`, `update_ad_status`
+Confirm before writing.

@@ -1,10 +1,24 @@
-# Google Ads Analyzer for Claude Code
+# Google Ads Analyzer — Multi-Platform AI Skill
 
-A Claude Code skill + MCP server setup for expert-level Google Ads campaign analysis. Includes GAQL query templates, Quality Score diagnostics, Smart Bidding evaluation, Performance Max deep dives, and 12 reference documents.
+Expert-level Google Ads campaign analysis, diagnosis, and management skill for AI coding platforms. Includes GAQL query templates, Quality Score diagnostics, Smart Bidding evaluation, Performance Max deep dives, campaign write tools, and 12 reference documents.
+
+## Supported Platforms
+
+| Platform | Install Command | Type |
+|:---------|:---------------|:-----|
+| **Hermes Agent** | `bash scripts/install.sh hermes` | Skill |
+| **Claude Code** | `bash scripts/install.sh claude-code` | Skill |
+| **Cursor** | `bash scripts/install.sh cursor` | Rules |
+| **GitHub Copilot** | `bash scripts/install.sh copilot` | Instructions |
+| **OpenCode** | `bash scripts/install.sh opencode` | Skill |
+| **Windsurf** | `bash scripts/install.sh windsurf` | Rules |
+| **Aider** | `bash scripts/install.sh aider` | Rules |
+
+Install all at once: `bash scripts/install.sh all`
 
 ## What It Does
 
-When installed, Claude Code can:
+When installed on any supported platform, the AI can:
 
 **Read & Analyze:**
 - Query your Google Ads accounts directly using GAQL (Google Ads Query Language)
@@ -22,97 +36,42 @@ When installed, Claude Code can:
 - Update daily budgets
 - Change bidding strategies (Target CPA, Target ROAS, Maximize Conversions, Maximize Conversion Value)
 
-## Components
+## Quick Start
 
-| Component | What it does |
-|---|---|
-| **Skill** (`skill/`) | Analysis framework with 12 reference docs that Claude loads as context |
-| **MCP Server** | Fork of [`google-ads-mcp`](https://github.com/mathiaschu/google-ads-mcp) with 6 write tools — connects Claude Code to the Google Ads API for reading and managing campaigns |
-| **Scripts** (`scripts/`) | OAuth setup helper |
-
-## Prerequisites
-
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
-- [Python](https://www.python.org/) 3.8+
-- [uv](https://docs.astral.sh/uv/) (Python package manager — the MCP server runs via `uvx`)
-- A Google Ads account (with a Developer Token)
-- A Google Cloud project with the Google Ads API enabled
-
-## Installation
-
-### Step 1: Install the Skill
-
-Copy the `skill/` folder into your Claude Code project:
+### 1. Install for your platform
 
 ```bash
-# From your Claude Code project root
-mkdir -p .claude/skills/google-ads-analyzer
-cp -r skill/* .claude/skills/google-ads-analyzer/
+# Clone the repo
+git clone https://github.com/jfiscman/google-ads-analyzer.git
+cd google-ads-analyzer
+
+# Install
+bash scripts/install.sh hermes        # or: claude-code, cursor, copilot, etc.
 ```
 
-The skill is now active. Claude will automatically use it when you ask about Google Ads analysis.
+> **Note on install location:** `hermes` and `opencode` install into your home
+> directory (`~/.hermes`, `~/.opencode`) and work from anywhere. The
+> project-scoped platforms (`claude-code`, `cursor`, `copilot`, `windsurf`,
+> `aider`) install into the **current working directory** — run their install
+> command from the root of the project you want the skill available in, not
+> from inside this cloned repo.
 
-### Step 2: Set Up a Google Cloud Project
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project (or use an existing one)
-3. Enable the **Google Ads API**:
-   - Go to APIs & Services → Library
-   - Search for "Google Ads API"
-   - Click Enable
-4. Create an **OAuth 2.0 Client ID**:
-   - Go to APIs & Services → Credentials
-   - Click "Create Credentials" → OAuth Client ID
-   - Application type: **Desktop app**
-   - Download the JSON file
-
-### Step 3: Get a Developer Token
-
-This is required to access the Google Ads API. It's separate from OAuth credentials.
-
-1. Sign in to your Google Ads **manager account** (MCC)
-2. Go to Tools & Settings → Setup → API Center
-3. Your Developer Token is shown there
-4. If you don't have one, apply for access (test accounts get instant approval)
-
-**Token access levels:**
-- **Test Account:** Instant approval, only works with test ad accounts
-- **Basic Access:** Requires application review, works with real accounts
-- **Standard Access:** Higher rate limits, requires additional review
-
-For most use cases, Basic Access is sufficient. The review process takes a few business days.
-
-### Step 4: Run the Setup Script
+### 2. Set up MCP (optional, for live API data)
 
 ```bash
 cd scripts/
 
-# Place your downloaded OAuth client JSON in this folder
-# (or point to it when prompted)
+# Place your OAuth client JSON in this folder
+# (download from Google Cloud Console → APIs & Services → Credentials)
 
 python3 setup.py
 ```
 
-The script will:
-1. Ask for your OAuth client JSON path
-2. Ask for your Developer Token
-3. Ask for your Login Customer ID (MCC ID, optional)
-4. Open a browser for Google OAuth authorization
-5. Generate `credentials.json` and `.env.google-ads`
-6. Configure `.mcp.json` for Claude Code
-7. Test the connection
+The script will guide you through OAuth authentication, Developer Token setup, and connection testing.
 
-### Step 5: Verify
+### 3. Start analyzing
 
-Restart Claude Code, then ask:
-
-> "List my Google Ads accounts"
-
-Claude should connect to your account and show available accounts.
-
-## Usage Examples
-
-Once installed, you can ask Claude things like:
+Ask your AI assistant:
 
 **Analysis:**
 - "Analyze my Google Ads campaigns from the last 30 days"
@@ -130,36 +89,86 @@ Once installed, you can ask Claude things like:
 - "Increase the daily budget on campaign Y to $100"
 - "Switch campaign Z to Target ROAS at 4x"
 
-You can also share screenshots or exported data from the Google Ads UI — the skill works with any data format.
+## Repository Structure
+
+```
+google-ads-analyzer/
+├── SKILL.md                    ← Platform-agnostic skill definition
+├── references/                 ← 12 domain knowledge docs (shared by all platforms)
+│   ├── core_concepts.md        ← Hub: Ad Rank, QS, Smart Bidding, PMax, GAQL
+│   ├── gaql_queries.md         ← Ready-to-use GAQL queries
+│   ├── quality_score.md        ← 3 QS components, diagnosis
+│   ├── impression_share.md     ← IS, lost by budget vs rank
+│   ├── smart_bidding.md        ← tCPA, tROAS, learning period
+│   ├── performance_max.md      ← Asset groups, signals, cannibalization
+│   ├── conversion_tracking.md  ← Types, DDA, conversion lag
+│   ├── account_structure.md    ← MCC hierarchy, naming
+│   ├── search_terms_negatives.md
+│   ├── ad_copy_rsa.md          ← RSA, headlines, ad strength
+│   ├── segmentation.md         ← GAQL segments: device, geo, day_of_week
+│   └── performance_fluctuations.md
+├── platforms/                  ← Platform-specific adapters
+│   ├── hermes/                 ← Hermes Agent skill
+│   ├── claude-code/            ← Claude Code skill
+│   ├── cursor/                 ← Cursor rules
+│   ├── copilot/                ← GitHub Copilot instructions
+│   ├── opencode/               ← OpenCode skill
+│   ├── windsurf/               ← Windsurf rules
+│   └── aider/                  ← Aider rules
+├── mcp/                        ← MCP server config (multi-platform)
+├── scripts/                    ← Setup & install scripts
+│   ├── install.sh              ← Universal installer
+│   └── setup.py                ← Google OAuth setup
+└── README.md
+```
+
+## Prerequisites
+
+- Python 3.8+
+- [uv](https://docs.astral.sh/uv/) (Python package manager)
+- A Google Ads account (with a Developer Token)
+- A Google Cloud project with the Google Ads API enabled
+- OAuth 2.0 Desktop Client credentials
 
 ## What's in the Reference Docs
 
-| Document | Covers |
-|---|---|
-| `core_concepts.md` | Ad Rank, Quality Score, Smart Bidding, PMax, GAQL overview |
-| `gaql_queries.md` | Ready-to-use GAQL queries for each analysis step |
-| `quality_score.md` | 3 components, diagnosis by component, prioritization |
-| `impression_share.md` | IS lost by budget vs rank, auction insights |
-| `smart_bidding.md` | tCPA, tROAS, learning period, when to intervene |
-| `performance_max.md` | Asset groups, signals, feed quality, cannibalization |
-| `conversion_tracking.md` | Types, DDA, conversion lag, primary vs secondary |
-| `account_structure.md` | MCC hierarchy, naming, brand vs non-brand |
-| `search_terms_negatives.md` | Search term report, match types, negative keywords |
-| `ad_copy_rsa.md` | RSA headlines, descriptions, ad strength, asset labels |
-| `segmentation.md` | GAQL segments: device, geo, day_of_week, audiences |
-| `performance_fluctuations.md` | Normal vs concerning changes, conversion lag trap |
+| # | Document | Covers |
+|---|----------|--------|
+| 1 | `core_concepts.md` | Ad Rank, Quality Score, Smart Bidding, PMax, GAQL overview |
+| 2 | `gaql_queries.md` | Ready-to-use GAQL queries for each analysis step |
+| 3 | `quality_score.md` | 3 components, diagnosis by component, prioritization |
+| 4 | `impression_share.md` | IS lost by budget vs rank, auction insights |
+| 5 | `smart_bidding.md` | tCPA, tROAS, learning period, when to intervene |
+| 6 | `performance_max.md` | Asset groups, signals, feed quality, cannibalization |
+| 7 | `conversion_tracking.md` | Types, DDA, conversion lag, primary vs secondary |
+| 8 | `account_structure.md` | MCC hierarchy, naming, brand vs non-brand |
+| 9 | `search_terms_negatives.md` | Search term report, match types, negative keywords |
+| 10 | `ad_copy_rsa.md` | RSA headlines, descriptions, ad strength, asset labels |
+| 11 | `segmentation.md` | GAQL segments: device, geo, day_of_week, audiences |
+| 12 | `performance_fluctuations.md` | Normal vs concerning changes, conversion lag trap |
+
+## Write Tools
+
+| Tool | What it does |
+|:---|:---|
+| `add_negative_keywords` | Adds negative keywords (BROAD, PHRASE, EXACT) |
+| `update_campaign_status` | Pauses or enables a campaign |
+| `update_campaign_budget` | Changes daily budget |
+| `update_bidding_strategy` | Changes bid strategy (TARGET_CPA, TARGET_ROAS, etc.) |
+| `update_ad_group_status` | Pauses or enables an ad group |
+| `update_ad_status` | Pauses or enables an ad |
 
 ## Troubleshooting
 
 | Error | Cause | Fix |
-|---|---|---|
+|:---|:---|:---|
 | `UNAUTHENTICATED` | Refresh token revoked or expired | Run `python3 scripts/setup.py` again |
-| `PERMISSION_DENIED` | Developer token not approved or wrong account | Check token status in API Center; verify Login Customer ID |
-| `DEVELOPER_TOKEN_NOT_APPROVED` | Token still in test mode | Apply for Basic Access in API Center |
+| `PERMISSION_DENIED` | Developer token not approved | Check token status in API Center |
+| `DEVELOPER_TOKEN_NOT_APPROVED` | Token still in test mode | Apply for Basic Access |
 | `INVALID_CUSTOMER_ID` | Wrong customer ID format | Use 10-digit ID without dashes |
-| MCP not connecting | Config or credentials issue | Verify `.mcp.json` paths are correct; restart Claude Code |
-| No data returned | Wrong date range or no active campaigns | Check `campaign.status = 'ENABLED'`; adjust date range |
+| MCP not connecting | Config or credentials issue | Verify paths; restart your AI platform |
+| No data returned | Wrong date range or no active campaigns | Check `campaign.status = 'ENABLED'` |
 
 ## License
 
-MIT
+MIT — Copyright (c) 2026 Mathias Chu

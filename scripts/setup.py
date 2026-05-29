@@ -11,6 +11,7 @@ import http.server
 import json
 import os
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 import webbrowser
@@ -23,6 +24,9 @@ MCP_FILE = os.path.join(PROJECT_DIR, ".mcp.json")
 
 PORT = 8085
 SCOPES = "https://www.googleapis.com/auth/adwords"
+# Google Ads API version used by the connection test — bump in one place when
+# Google sunsets it (https://developers.google.com/google-ads/api/docs/release-notes).
+API_VERSION = "v18"
 
 
 def load_client(path):
@@ -89,7 +93,11 @@ def do_oauth_flow(client):
 
     server = http.server.HTTPServer(("localhost", PORT), Handler)
     print(f"Waiting for authorization at http://localhost:{PORT}...")
-    server.handle_request()
+    # Keep serving until the redirect carrying ?code= arrives. Without the loop,
+    # a stray request (e.g. the browser fetching /favicon.ico) could consume the
+    # single handled request and cause us to miss the real authorization code.
+    while code is None:
+        server.handle_request()
     server.server_close()
 
     if not code:
@@ -121,6 +129,9 @@ def do_oauth_flow(client):
         print(f"ERROR exchanging code: {e.code}")
         print(error_body)
         sys.exit(1)
+    except urllib.error.URLError as e:
+        print(f"ERROR: could not reach Google's token endpoint: {e.reason}")
+        sys.exit(1)
 
     if "refresh_token" not in tokens:
         print(f"ERROR: No refresh_token received: {json.dumps(tokens, indent=2)}")
@@ -141,6 +152,8 @@ def save_credentials(client, tokens, developer_token, login_customer_id):
     }
     with open(CREDENTIALS_FILE, "w") as f:
         json.dump(adc, f, indent=2)
+    # Holds a long-lived refresh_token — restrict to the owner only.
+    os.chmod(CREDENTIALS_FILE, 0o600)
     print(f"Credentials saved to: {CREDENTIALS_FILE}")
 
     # .env.google-ads (reference file)
@@ -154,6 +167,8 @@ def save_credentials(client, tokens, developer_token, login_customer_id):
         env_lines.append(f"GOOGLE_ADS_LOGIN_CUSTOMER_ID={login_customer_id}")
     with open(ENV_FILE, "w") as f:
         f.write("\n".join(env_lines) + "\n")
+    # Contains client_secret + refresh_token — restrict to the owner only.
+    os.chmod(ENV_FILE, 0o600)
     print(f"Environment variables saved to: {ENV_FILE}")
 
 
@@ -191,7 +206,7 @@ def test_connection(tokens, developer_token):
     """Quick test: list accessible customer accounts."""
     print("\nTesting connection to Google Ads API...")
     req = urllib.request.Request(
-        "https://googleads.googleapis.com/v18/customers:listAccessibleCustomers",
+        f"https://googleads.googleapis.com/{API_VERSION}/customers:listAccessibleCustomers",
         headers={
             "Authorization": f"Bearer {tokens['access_token']}",
             "developer-token": developer_token,
@@ -210,6 +225,10 @@ def test_connection(tokens, developer_token):
         error_body = e.read().decode()
         print(f"Warning: test failed ({e.code}), but credentials may still be valid.")
         print(f"  Detail: {error_body[:200]}")
+        return False
+    except urllib.error.URLError as e:
+        print(f"Warning: could not reach the Google Ads API ({e.reason}); "
+              "credentials were still saved.")
         return False
 
 
